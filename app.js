@@ -68,26 +68,28 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
                 CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant);
                 Jobs[reqId] =job;
 
-
-            });
-
-            job.on('canceled', function() {
-                CroneHandler.JobRemover(reqId,company,tenant, function (errRemv,resRemv)
-                {
-                    if(errRemv)
+                job.on('canceled', function() {
+                    CroneHandler.JobRemover(reqId,company,tenant, function (errRemv,resRemv)
                     {
-                        var jsonString = messageFormatter.FormatMessage(errRemv, "ERROR", false, undefined);
-                        logger.debug('[DVP-CronScheduler.New canceled] - [%s] - Cancelled job succeeded ',reqId,jsonString);
-                        res.end(jsonString);
-                    }
-                    else
-                    {
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRemv);
-                        logger.debug('[DVP-CronScheduler.Cron canceled] - [%s] - Cancelled job removing failed',reqId,jsonString);
-                        res.end(jsonString);
-                    }
+                        if(errRemv)
+                        {
+                            var jsonString = messageFormatter.FormatMessage(errRemv, "ERROR", false, undefined);
+                            logger.debug('[DVP-CronScheduler.New canceled] - [%s] - Cancelled job succeeded ',reqId,jsonString);
+                            res.end(jsonString);
+                        }
+                        else
+                        {
+                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRemv);
+                            logger.debug('[DVP-CronScheduler.Cron canceled] - [%s] - Cancelled job removing failed',reqId,jsonString);
+                            res.end(jsonString);
+                        }
+                    });
                 });
+
+                
             });
+
+
 
 
             var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, reqId);
@@ -221,3 +223,11 @@ RestServer.get('/DVP/API/'+version+'/Crons',authorization({resource:"template", 
 });
 
 
+RestServer.post('/DVP/API/'+version+'/Cron/test', function (req,res,next) {
+
+    console.log(req.body.Message);
+    res.end();
+
+
+    return next();
+});

@@ -151,14 +151,10 @@ function JobDetailsPicker(callback)
         }
         else
         {
-            if(result.length>0)
-            {
-                callback(undefined,result);
-            }
-            else
-            {
-                callback(new Error('No cached records found'),undefined);
-            }
+
+            callback(undefined,result);
+
+
 
         }
     });
