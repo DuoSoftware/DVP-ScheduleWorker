@@ -68,10 +68,31 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
                 CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant);
                 Jobs[reqId] =job;
 
-                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, reqId);
-                logger.debug('[DVP-CronScheduler.New Cron] - [%s] - Successfully saved',reqId,jsonString);
-                res.end(jsonString);
+
             });
+
+            job.on('canceled', function() {
+                CroneHandler.JobRemover(reqId,company,tenant, function (errRemv,resRemv)
+                {
+                    if(errRemv)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(errRemv, "ERROR", false, undefined);
+                        logger.debug('[DVP-CronScheduler.New canceled] - [%s] - Cancelled job succeeded ',reqId,jsonString);
+                        res.end(jsonString);
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRemv);
+                        logger.debug('[DVP-CronScheduler.Cron canceled] - [%s] - Cancelled job removing failed',reqId,jsonString);
+                        res.end(jsonString);
+                    }
+                });
+            });
+
+
+            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, reqId);
+            logger.debug('[DVP-CronScheduler.New Cron] - [%s] - Successfully saved',reqId,jsonString);
+            res.end(jsonString);
 
         }
 
