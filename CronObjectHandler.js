@@ -2,6 +2,7 @@
  * Created by Pawan on 7/15/2016.
  */
 var DbConn = require('dvp-dbmodels');
+var cronJob=require('cron').CronJob;
 var httpReq = require('request');
 var util = require('util');
 var format=require('stringformat');
@@ -204,11 +205,106 @@ function RecoverJobs(Jobs)
 
                         if(result)
                         {
-                            var job = schedule.scheduleJob(result.CronePattern, function(){
-                                CronCallbackHandler(cronId,result.Company,result.Tenant);
-                                Jobs[cronId] =job;
 
-                            });
+                            var pattern="";
+                            var checkDate=false;
+                            var expiredDate=false;
+
+                            if(isNaN(Date.parse(result.CronePattern)))
+                            {
+                                pattern=result.CronePattern;
+                                checkDate=false;
+                            }
+                            else
+                            {
+                                pattern= new Date(result.CronePattern);
+                                if (pattern<new Date())
+                                {
+                                    expiredDate=true;
+                                    console.log("Invalid Key");
+                                }
+                                else
+                                {
+                                    checkDate=true;
+                                }
+
+
+                            }
+
+                            if(!expiredDate)
+                            {
+
+                                var job=new cronJob(pattern, function() {
+                                    CronCallbackHandler(cronId,result.Company,result.Tenant);
+
+                                    if(!isNaN(Date.parse(result.CronePattern)))
+                                    {
+                                        delete Jobs[cronId];
+
+                                        JobCacheRemover(cronId,result.Company,result.Tenant, function (errCache,resChache) {
+
+                                            if(errCache)
+                                            {
+                                                console.log("Error in object cache removing");
+                                            }
+                                            else
+                                            {
+                                                console.log("Object cache removed successfully");
+                                            }
+                                        });
+                                    }
+
+                                }, null, false);
+
+                                Jobs[cronId] =job;
+                                job.start();
+                            }
+
+
+
+                            /*var checkDate = new Date(result.CronePattern);
+
+                             if(checkDate)
+                             {
+                             pattern=checkDate;
+                             }
+                             else
+                             {
+                             pattern=result.CronePattern;
+                             }
+
+
+                             var job=new cronJob(pattern, function() {
+                             CronCallbackHandler(cronId,result.Company,result.Tenant);
+
+                             if(checkDate)
+                             {
+                             delete Jobs[reqId];
+
+                             JobCacheRemover(cronId,result.Company,result.Tenant, function (errCache,resChache) {
+
+                             if(errCache)
+                             {
+                             console.log("Error in object cache removing");
+                             }
+                             else
+                             {
+                             console.log("Object cache removed successfully");
+                             }
+                             });
+                             }
+
+                             }, null, false);
+
+                             Jobs[cronId] =job;
+                             job.start();*/
+
+                            /*
+                             var job = schedule.scheduleJob(result.CronePattern, function(){
+                             CronCallbackHandler(cronId,result.Company,result.Tenant);
+                             Jobs[cronId] =job;
+
+                             });*/
                         }
 
                         callback(error,Jobs);
@@ -236,7 +332,7 @@ function RecoverJobs(Jobs)
 
 function JobCacheRemover(croneUuid,company,tenant,callback)
 {
-    var jobKey = "CRON:"+croneUuid+":"+company+":"+tenent;
+    var jobKey = "CRON:"+croneUuid+":"+company+":"+tenant;
     client.del(jobKey, function (err,res) {
         callback(err,res);
     });
@@ -349,3 +445,4 @@ module.exports.JobRemover = JobRemover;
 module.exports.CroneObjectUpdater = CroneObjectUpdater;
 module.exports.PickAllCrons = PickAllCrons;
 module.exports.PickCronById = PickCronById;
+module.exports.JobCacheRemover = JobCacheRemover;
