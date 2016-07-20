@@ -179,8 +179,7 @@ function JobRecordPicker(jobId,callback)
 
         callback(error,undefined);
     });
-}
-
+};
 
 function RecoverJobs(Jobs)
 {
@@ -222,6 +221,16 @@ function RecoverJobs(Jobs)
                                 {
                                     expiredDate=true;
                                     console.log("Invalid Key");
+                                    JobRemover(cronId,result.Company,result.Tenant, function (errRemove,resRemove) {
+                                        if(errRemove)
+                                        {
+                                            console.log("Error in object cache removing");
+                                        }
+                                        else
+                                        {
+                                            console.log("Object cache removed successfully");
+                                        }
+                                    });
                                 }
                                 else
                                 {
@@ -241,9 +250,9 @@ function RecoverJobs(Jobs)
                                     {
                                         delete Jobs[cronId];
 
-                                        JobCacheRemover(cronId,result.Company,result.Tenant, function (errCache,resChache) {
+                                        JobRemover(cronId,result.Company,result.Tenant, function (errRemove,resRemove) {
 
-                                            if(errCache)
+                                            if(errRemove)
                                             {
                                                 console.log("Error in object cache removing");
                                             }
@@ -328,7 +337,7 @@ function RecoverJobs(Jobs)
         }
 
     });
-}
+};
 
 function JobCacheRemover(croneUuid,company,tenant,callback)
 {
@@ -355,7 +364,7 @@ function JobObjectRemover(croneUuid,company,tenant,callback)
 function JobRemover(croneUuid,company,tenant,callback)
 {
 
-    JobObjectRemover(croneUuid, function (errRemObj,resRemObj) {
+    JobObjectRemover(croneUuid,company,tenant, function (errRemObj,resRemObj) {
 
         JobCacheRemover(croneUuid,company,tenant, function (errRemCahe,resCache) {
 

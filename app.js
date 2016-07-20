@@ -98,7 +98,18 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
                     if(checkDate)
                     {
                         delete Jobs[reqId];
-                        CroneHandler.JobCacheRemover(reqId,company,tenant, function (errCache,resChache) {
+
+                        CroneHandler.JobRemover(reqId,company,tenant, function (errRemove,resRemove) {
+                            if(errRemove)
+                            {
+                                console.log("Error in object cache removing");
+                            }
+                            else
+                            {
+                                console.log("Object cache removed successfully");
+                            }
+                        });
+                        /*CroneHandler.JobCacheRemover(reqId,company,tenant, function (errCache,resChache) {
 
                             if(errCache)
                             {
@@ -108,7 +119,7 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
                             {
                                 console.log("Object cache removed successfully");
                             }
-                        });
+                        });*/
                     }
 
                 }, null, false);
