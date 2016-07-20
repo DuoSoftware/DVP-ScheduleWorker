@@ -435,7 +435,9 @@ function PickCronById(croneUuid,company,tenant,callback)
     }).catch(function (error) {
         callback(error,undefined);
     });
-}
+};
+
+
 
 module.exports.CroneDataRecorder = CroneDataRecorder;
 module.exports.CronCallbackHandler = CronCallbackHandler;

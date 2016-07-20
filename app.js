@@ -280,6 +280,54 @@ RestServer.get('/DVP/API/'+version+'/Crons',authorization({resource:"template", 
     return next();
 });
 
+RestServer.post('/DVP/API/'+version+'/Cron/:id/Action/:action',authorization({resource:"template", action:"write"}), function (req,res,next){
+
+    var croneId=req.params.id;
+
+    var company = req.user.company;
+    var tenant=req.user.tenant;
+    var action=req.params.action;
+
+    var fullDestroy=true;
+    fullDestroy=req.body.FullDestroy;
+
+
+    if(action=="stop")
+    {
+        Jobs[croneId].stop();
+        delete Jobs[croneId];
+    }
+    else if(action=="start")
+    {
+        Jobs[croneId].start();
+    }
+
+
+
+    if(fullDestroy)
+    {
+        CroneHandler.JobRemover(croneId,company,tenant, function (errRemove,resRemove) {
+
+            if(errRemove)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR", false, undefined);
+                logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Cron Action failed',croneId,jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, response);
+                logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Cron Action succeded',croneId,jsonString);
+                res.end(jsonString);
+            }
+        });
+
+    }
+
+
+    return next();
+
+});
 
 RestServer.post('/DVP/API/'+version+'/Cron/test', function (req,res,next) {
 
