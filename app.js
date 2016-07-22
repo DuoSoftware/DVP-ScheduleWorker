@@ -204,6 +204,57 @@ RestServer.del('/DVP/API/'+version+'/Cron/:id',authorization({resource:"template
     return next();
 });
 
+RestServer.del('/DVP/API/'+version+'/Cron/Reference/:id',authorization({resource:"template", action:"write"}), function (req,res,next) {
+
+    var reqId = uuid.v1();
+
+    var croneId=req.params.id;
+
+    var company = req.user.company;
+    var tenant=req.user.tenant;
+
+CroneHandler.PickJobRecordByReference(req.params.id,company,tenant, function (errData,resData) {
+
+    if(errData)
+    {
+        var jsonString = messageFormatter.FormatMessage(errData, "ERROR", false, undefined);
+        logger.debug('[DVP-CronScheduler.Delete Cron by ref] - [%s] - Error in searching cron',reqId,jsonString);
+        res.end(jsonString);
+    }
+    else
+    {
+        CroneHandler.JobRemover(resData.UniqueId,company,tenant, function (errRemv,resRemv) {
+
+
+            if(errRemv )
+            {
+
+                var jsonString = messageFormatter.FormatMessage(errRemv, "ERROR", false, undefined);
+                logger.debug('[DVP-CronScheduler.Delete Cron by ref] - [%s] - Error in removing',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRemv);
+                logger.debug('[DVP-CronScheduler.Delete Cron by ref] - [%s] - Successfully removed',reqId,jsonString);
+                res.end(jsonString);
+            }
+            delete Jobs[reqId];
+            res.end();
+
+
+        });
+
+    }
+
+});
+
+
+    return next();
+});
+
+
 RestServer.put('/DVP/API/'+version+'/Cron/:id',authorization({resource:"template", action:"write"}), function (req,res,next) {
 
     var reqId = uuid.v1();
@@ -299,14 +350,14 @@ RestServer.post('/DVP/API/'+version+'/Cron/:id/Action/:action',authorization({re
     var tenant=req.user.tenant;
     var action=req.params.action;
 
-    var fullDestroy=true;
-    fullDestroy=req.body.FullDestroy;
+    var fullDestroy=false;
+    fullDestroy=req.body.fullDestroy;
 
 
     if(action=="stop")
     {
         Jobs[croneId].stop();
-        delete Jobs[croneId];
+
     }
     else if(action=="start")
     {
@@ -317,6 +368,7 @@ RestServer.post('/DVP/API/'+version+'/Cron/:id/Action/:action',authorization({re
 
     if(fullDestroy)
     {
+        delete Jobs[croneId];
         CroneHandler.JobRemover(croneId,company,tenant, function (errRemove,resRemove) {
 
             if(errRemove)
@@ -328,17 +380,98 @@ RestServer.post('/DVP/API/'+version+'/Cron/:id/Action/:action',authorization({re
             else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, response);
-                logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Cron Action succeded',croneId,jsonString);
+                logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Cron Action succeeded',croneId,jsonString);
                 res.end(jsonString);
             }
         });
 
+    }
+    else
+    {
+        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, croneId);
+        logger.debug('[DVP-CronScheduler.New Cron] - [%s] - Job successfully '+action+"ed",croneId,jsonString);
+        res.end(jsonString);
     }
 
 
     return next();
 
 });
+
+RestServer.post('/DVP/API/'+version+'/Cron/Reference/:id/Action/:action',authorization({resource:"template", action:"write"}), function (req,res,next){
+
+    var croneId="";
+
+    var company = req.user.company;
+    var tenant=req.user.tenant;
+    var action=req.params.action;
+
+    var fullDestroy=false;
+    fullDestroy=req.body.fullDestroy;
+
+    CroneHandler.PickJobRecordByReference(req.params.id,company,tenant, function (errData,resData) {
+
+        if(errData)
+        {
+            var jsonString = messageFormatter.FormatMessage(errData, "ERROR", false, undefined);
+            logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Cron Action failed',croneId,jsonString);
+            res.end(jsonString);
+        }
+        else
+        {
+            croneId=resData.UniqueId;
+
+            if(action=="stop")
+            {
+                Jobs[croneId].stop();
+
+            }
+            else if(action=="start")
+            {
+                Jobs[croneId].start();
+            }
+
+
+
+            if(fullDestroy)
+            {
+                delete Jobs[croneId];
+                CroneHandler.JobRemover(croneId,company,tenant, function (errRemove,resRemove) {
+
+                    if(errRemove)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(err, "ERROR", false, undefined);
+                        logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Cron Action failed',croneId,jsonString);
+                        res.end(jsonString);
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, response);
+                        logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Cron Action succeeded',croneId,jsonString);
+                        res.end(jsonString);
+                    }
+                });
+
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, croneId);
+                logger.debug('[DVP-CronScheduler.New Cron] - [%s] - Job successfully '+action+"ed",croneId,jsonString);
+                res.end(jsonString);
+            }
+        }
+    });
+
+
+
+
+
+
+
+    return next();
+
+});
+
 
 RestServer.post('/DVP/API/'+version+'/Cron/test', function (req,res,next) {
 

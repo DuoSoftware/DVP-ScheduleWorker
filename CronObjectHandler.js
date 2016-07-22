@@ -181,6 +181,26 @@ function JobRecordPicker(jobId,callback)
     });
 };
 
+function PickJobRecordByReference(ref,company,tenant,callback)
+{
+    DbConn.Cron.find({where:[{Reference:ref},{Company: company},{Tenant:tenant}]}).then(function (result) {
+
+        if(result)
+        {
+            callback(undefined,result);
+        }
+        else
+        {
+            callback(new Error('No job record found'),undefined);
+        }
+
+
+    }).catch(function (error) {
+
+        callback(error,undefined);
+    });
+};
+
 function RecoverJobs(Jobs)
 {
     var JobkeyArray=[];
@@ -457,3 +477,4 @@ module.exports.CroneObjectUpdater = CroneObjectUpdater;
 module.exports.PickAllCrons = PickAllCrons;
 module.exports.PickCronById = PickCronById;
 module.exports.JobCacheRemover = JobCacheRemover;
+module.exports.PickJobRecordByReference = PickJobRecordByReference;
