@@ -75,13 +75,14 @@ function CroneDataRecorder(croneObj,company,tenant,callback)
 
 };
 
-function CronCallbackHandler(croneUuid,company,tenant)
+function CronCallbackHandler(croneUuid,company,tenant,callback)
 {
     DbConn.Cron.find({where:{UniqueId:croneUuid}}).then(function (result) {
 
         if(!result)
         {
             console.log("No record found");
+            callback(new Error("No record found"),undefined);
 
         }
         else
@@ -102,22 +103,25 @@ function CronCallbackHandler(croneUuid,company,tenant)
                 if(error)
                 {
                     console.log("ERROR sending request "+error);
+                    callback(new Error("ERROR sending request "+error),undefined);
                 }
                 else if (!error && response != undefined ) {
 
                     console.log("resp "+response);
+                    callback(undefined,response);
                     //console.log("Sent "+JSON.parse(data)+" To "+result.CallbackURL);
 
                 }
                 else
                 {
-                    console.log("Nooooooo");
+                    callback(new Error("error"),undefined);
                 }
             });
         }
 
     }).catch(function (error) {
         console.log(error);
+        callback(error,undefined);
     })
 };
 

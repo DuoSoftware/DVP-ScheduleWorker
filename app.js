@@ -30,7 +30,7 @@ RestServer.pre(restify.pre.userAgentConnection());
 RestServer.use(jwt({secret: secret.Secret}));
 var version=config.Host.version;
 
-RestServer.listen(8080, function () {
+RestServer.listen(config.Host.port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
     CroneHandler.RecoverJobs(Jobs);
 
@@ -94,33 +94,44 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
             else
             {
                 var job=new cronJob(pattern, function() {
-                    CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant);
-                    if(checkDate)
-                    {
-                        delete Jobs[reqId];
+                    CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant, function (err,response) {
 
-                        CroneHandler.JobRemover(reqId,company,tenant, function (errRemove,resRemove) {
-                            if(errRemove)
+                        if(err)
+                        {
+                            console.log(err);
+                        }
+                        else
+                        {
+                            if(checkDate)
                             {
-                                console.log("Error in object cache removing");
-                            }
-                            else
-                            {
-                                console.log("Object cache removed successfully");
-                            }
-                        });
-                        /*CroneHandler.JobCacheRemover(reqId,company,tenant, function (errCache,resChache) {
+                                delete Jobs[reqId];
 
-                            if(errCache)
-                            {
-                                console.log("Error in object cache removing");
+                                CroneHandler.JobRemover(reqId,company,tenant, function (errRemove,resRemove) {
+                                    if(errRemove)
+                                    {
+                                        console.log("Error in object cache removing");
+                                    }
+                                    else
+                                    {
+                                        console.log("Object cache removed successfully");
+                                    }
+                                });
+                                /*CroneHandler.JobCacheRemover(reqId,company,tenant, function (errCache,resChache) {
+
+                                 if(errCache)
+                                 {
+                                 console.log("Error in object cache removing");
+                                 }
+                                 else
+                                 {
+                                 console.log("Object cache removed successfully");
+                                 }
+                                 });*/
                             }
-                            else
-                            {
-                                console.log("Object cache removed successfully");
-                            }
-                        });*/
-                    }
+                        }
+
+                    });
+
 
                 }, null, false);
 
