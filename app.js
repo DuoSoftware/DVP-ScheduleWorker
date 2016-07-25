@@ -67,7 +67,7 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
         if (pattern<new Date())
         {
             expiredDate=true;
-            var jsonString = messageFormatter.FormatMessage(new Error("Invalid date/time"), "ERROR", false, undefined);
+            var jsonString = messageFormatter.FormatMessage(new Error("Expired date/time"), "ERROR", false, undefined);
             logger.debug('[DVP-CronScheduler.New Cron] - [%s] - Invalid date/time',reqId,jsonString);
             res.end(jsonString);
         }
