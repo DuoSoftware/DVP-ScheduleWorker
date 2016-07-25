@@ -114,7 +114,7 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
                 }
                 else
                 {
-                    callback(new Error("error"),undefined);
+                    callback(new Error("error in operation"),undefined);
                 }
             });
         }
