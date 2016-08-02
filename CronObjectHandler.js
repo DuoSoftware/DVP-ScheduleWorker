@@ -87,23 +87,18 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
         }
         else
         {
-            var replyObj =
-            {
-                Message:result.CallbackData
-            }
-
-
-
-            var croneCallbacks = {url: result.CallbackURL, method: "POST", json: replyObj,headers: {
+            var croneCallbacks = {url: result.CallbackURL, method: "POST", json: result,headers: {
                 authorization: "bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdWtpdGhhIiwianRpIjoiMTdmZTE4M2QtM2QyNC00NjQwLTg1NTgtNWFkNGQ5YzVlMzE1Iiwic3ViIjoiNTZhOWU3NTlmYjA3MTkwN2EwMDAwMDAxMjVkOWU4MGI1YzdjNGY5ODQ2NmY5MjExNzk2ZWJmNDMiLCJleHAiOjE4OTMzMDI3NTMsInRlbmFudCI6LTEsImNvbXBhbnkiOi0xLCJzY29wZSI6W3sicmVzb3VyY2UiOiJhbGwiLCJhY3Rpb25zIjoiYWxsIn1dLCJpYXQiOjE0NjEyOTkxNTN9.YiocvxO_cVDzH5r67-ulcDdBkjjJJDir2AeSe3jGYeA",
                 companyinfo: format("{0}:{1}", tenant, company)
             }};
+
+
             httpReq(croneCallbacks, function (error, response, data) {
 
                 if(error)
                 {
                     console.log("ERROR sending request "+error);
-                    callback(new Error("ERROR sending request "+error),undefined);
+                    callback(error,undefined);
                 }
                 else if (!error && response != undefined ) {
 
@@ -114,7 +109,7 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
                 }
                 else
                 {
-                    callback(new Error("error in operation"),undefined);
+                    callback(new Error("Error in operation"),undefined);
                 }
             });
         }

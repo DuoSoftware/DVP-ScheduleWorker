@@ -224,6 +224,8 @@ RestServer.del('/DVP/API/'+version+'/Cron/Reference/:id',authorization({resource
     var company = req.user.company;
     var tenant=req.user.tenant;
 
+    console.log("Reference ID: "+req.params.id);
+
 CroneHandler.PickJobRecordByReference(req.params.id,company,tenant, function (errData,resData) {
 
     if(errData)
@@ -486,7 +488,7 @@ RestServer.post('/DVP/API/'+version+'/Cron/Reference/:id/Action/:action',authori
 
 RestServer.post('/DVP/API/'+version+'/Cron/test', function (req,res,next) {
 
-    console.log(req.body.Message);
+    console.log(req.body);
     res.end();
 
 
