@@ -16,6 +16,8 @@ var port = config.Redis.port || 3000;
 var ip = config.Redis.ip;
 var password = config.Redis.password;
 
+var authToken = config.Token;
+
 
 var client = redis.createClient(port,ip);
 client.auth(password, function (error) {
@@ -88,7 +90,7 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
         else
         {
             var croneCallbacks = {url: result.CallbackURL, method: "POST", json: result,headers: {
-                authorization: "bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdWtpdGhhIiwianRpIjoiMTdmZTE4M2QtM2QyNC00NjQwLTg1NTgtNWFkNGQ5YzVlMzE1Iiwic3ViIjoiNTZhOWU3NTlmYjA3MTkwN2EwMDAwMDAxMjVkOWU4MGI1YzdjNGY5ODQ2NmY5MjExNzk2ZWJmNDMiLCJleHAiOjE4OTMzMDI3NTMsInRlbmFudCI6LTEsImNvbXBhbnkiOi0xLCJzY29wZSI6W3sicmVzb3VyY2UiOiJhbGwiLCJhY3Rpb25zIjoiYWxsIn1dLCJpYXQiOjE0NjEyOTkxNTN9.YiocvxO_cVDzH5r67-ulcDdBkjjJJDir2AeSe3jGYeA",
+                authorization: authToken,
                 companyinfo: format("{0}:{1}", tenant, company)
             }};
 

@@ -31,7 +31,8 @@ module.exports = {
         "domain": "HOST_NAME",
         "port": "HOST_SCHEDULEWORKER_PORT",
         "version": "HOST_VERSION"
-    }
+    },
+    "Token": "HOST_TOKEN"
 };
 
 //NODE_CONFIG_DIR
