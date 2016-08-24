@@ -118,17 +118,7 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
                                         console.log("Object cache removed successfully");
                                     }
                                 });
-                                /*CroneHandler.JobCacheRemover(reqId,company,tenant, function (errCache,resChache) {
 
-                                 if(errCache)
-                                 {
-                                 console.log("Error in object cache removing");
-                                 }
-                                 else
-                                 {
-                                 console.log("Object cache removed successfully");
-                                 }
-                                 });*/
                             }
                         }
 
@@ -140,32 +130,6 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
 
                 Jobs[reqId] =job;
                 job.start();
-
-
-                /*var job = schedule.scheduleJob(pattern, function(){
-
-                 Jobs[reqId] =job;
-
-                 job.on('canceled', function() {
-                 CroneHandler.JobRemover(reqId,company,tenant, function (errRemv,resRemv)
-                 {
-                 if(errRemv)
-                 {
-                 var jsonString = messageFormatter.FormatMessage(errRemv, "ERROR", false, undefined);
-                 logger.debug('[DVP-CronScheduler.New canceled] - [%s] - Cancelled job succeeded ',reqId,jsonString);
-                 res.end(jsonString);
-                 }
-                 else
-                 {
-                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRemv);
-                 logger.debug('[DVP-CronScheduler.Cron canceled] - [%s] - Cancelled job removing failed',reqId,jsonString);
-                 res.end(jsonString);
-                 }
-                 });
-                 });
-
-
-                 });*/
 
 
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, reqId);
