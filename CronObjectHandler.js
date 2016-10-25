@@ -90,7 +90,7 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
         else
         {
             var croneCallbacks = {url: result.CallbackURL, method: "POST", json: result.CallbackData,headers: {
-                authorization: authToken,
+                authorization: "bearer "+authToken,
                 companyinfo: format("{0}:{1}", tenant, company)
             }};
 
