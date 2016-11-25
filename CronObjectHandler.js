@@ -265,7 +265,12 @@ function RecoverJobs(Jobs)
                             {
 
                                 var job=new cronJob(pattern, function() {
-                                    CronCallbackHandler(cronId,result.Company,result.Tenant);
+                                    CronCallbackHandler(cronId,result.Company,result.Tenant, function (errCallback,resCallback) {
+                                        if(errCallback)
+                                        {
+                                            console.log(errCallback);
+                                        }
+                                    });
 
                                     if(!isNaN(Date.parse(result.CronePattern)))
                                     {
