@@ -10,7 +10,7 @@ DVP-ScheduleWorker is a module which help developers to add and fire schedules.
 Important:
   - When user providing a Date , GMT Should be included.  (use moment.js to format datetime)
 
-#### Parameters
+#### Parameters for Schedule creation
 
 - CronePattern     (cron pattern or date) 
 - Description 
