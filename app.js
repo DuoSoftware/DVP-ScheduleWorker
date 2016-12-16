@@ -7,7 +7,7 @@ var restify = require('restify');
 var uuid = require('node-uuid');
 var config = require('config');
 var CroneHandler=require('./CronObjectHandler.js');
-
+var parser = require('cron-parser');
 
 var jwt = require('restify-jwt');
 var secret = require('dvp-common/Authentication/Secret.js');
@@ -35,12 +35,6 @@ RestServer.listen(config.Host.port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
     CroneHandler.RecoverJobs(Jobs);
 
-
-    var options = {
-        currentDate: new Date('Fri, 16 Dec 2016 12:05:53 UTC'),
-        endDate: new Date('Mon, 26 Dec 2016 14:40:00 UTC'),
-        iterator: true
-    };
 
 
 
