@@ -8,6 +8,7 @@ var uuid = require('node-uuid');
 var config = require('config');
 var CroneHandler=require('./CronObjectHandler.js');
 
+
 var jwt = require('restify-jwt');
 var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
@@ -35,7 +36,16 @@ RestServer.listen(config.Host.port, function () {
     CroneHandler.RecoverJobs(Jobs);
 
 
+    var options = {
+        currentDate: new Date('Fri, 16 Dec 2016 12:05:53 UTC'),
+        endDate: new Date('Mon, 26 Dec 2016 14:40:00 UTC'),
+        iterator: true
+    };
+
+
+
 });
+
 RestServer.use(restify.bodyParser());
 RestServer.use(restify.acceptParser(RestServer.acceptable));
 RestServer.use(restify.queryParser());
@@ -58,12 +68,17 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
     var checkDate=false;
     var expiredDate=false;
 
-    if(isNaN(Date.parse(req.body.CronePattern)))
-    {
-        pattern=req.body.CronePattern;
-        checkDate=false;
+
+    try {
+        var isValidPattern = parser.parseExpression(req.body.CronePattern);
+        if(isValidPattern)
+        {
+            pattern=req.body.CronePattern;
+            checkDate=false;
+        }
+        //console.log(interval);
     }
-    else
+    catch(e)
     {
         pattern= new Date(req.body.CronePattern);
         if (pattern<new Date())
@@ -78,8 +93,9 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
             checkDate=true;
         }
 
-
     }
+
+
 
     if(!expiredDate)
     {
@@ -95,37 +111,40 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
             }
             else
             {
-                var job=new cronJob(pattern, function() {
-                    CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant, function (err,response) {
+                    var job=new cronJob(pattern, function() {
+                        CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant, function (err,response) {
 
-                        if(err)
-                        {
-                            console.log(err);
-                        }
-                        else
-                        {
-                            if(checkDate)
+                            if(err)
                             {
-                                delete Jobs[reqId];
-
-                                CroneHandler.JobRemover(reqId,company,tenant, function (errRemove,resRemove) {
-                                    if(errRemove)
-                                    {
-                                        console.log("Error in object cache removing");
-                                    }
-                                    else
-                                    {
-                                        console.log("Object cache removed successfully");
-                                    }
-                                });
-
+                                console.log(err);
                             }
-                        }
+                            else
+                            {
+                                if(checkDate)
+                                {
+                                    delete Jobs[reqId];
 
-                    });
+                                    CroneHandler.JobRemover(reqId,company,tenant, function (errRemove,resRemove) {
+                                        if(errRemove)
+                                        {
+                                            console.log("Error in object cache removing");
+                                        }
+                                        else
+                                        {
+                                            console.log("Object cache removed successfully");
+                                        }
+                                    });
+
+                                }
+                            }
+
+                        });
 
 
-                }, null, false);
+                    }, null, false,req.body.Timezone);
+
+
+
 
 
                 Jobs[reqId] =job;

@@ -10,6 +10,7 @@ var config = require('config');
 var async= require('async');
 var schedule = require('node-schedule');
 
+
 var redis=require('redis');
 
 var port = config.Redis.port || 3000;
@@ -32,31 +33,32 @@ client.on("error", function (err) {
 
 
 
-function CroneDataRecorder(croneObj,company,tenant,callback)
+function CroneDataRecorder(cronObj,company,tenant,callback)
 {
 
-    DbConn.Cron.find({where:[{Reference: croneObj.Reference},{Company: company},{Tenant:tenant}]}).then(function (resCheckAvailable) {
+    DbConn.Cron.find({where:[{Reference: cronObj.Reference},{Company: company},{Tenant:tenant}]}).then(function (resCheckAvailable) {
 
         if(!resCheckAvailable)
         {
             var CronObj = DbConn.Cron
                 .build(
                 {
-                    UniqueId: croneObj.UniqueId,
-                    Description: croneObj.Description,
-                    CronePattern: croneObj.CronePattern,
-                    CallbackURL: croneObj.CallbackURL,
-                    CallbackData: croneObj.CallbackData,
+                    UniqueId: cronObj.UniqueId,
+                    Description: cronObj.Description,
+                    CronePattern: cronObj.CronePattern,
+                    CallbackURL: cronObj.CallbackURL,
+                    CallbackData: cronObj.CallbackData,
                     Company:company,
                     Tenant:tenant,
-                    Reference:croneObj.Reference
+                    Reference:cronObj.Reference,
+                    Timezone:cronObj.Timezone
 
 
                 }
             );
             CronObj.save().then(function (result)
             {
-                var jobRecStatus=JobDetailsRecorder(croneObj.UniqueId,company,tenant);
+                var jobRecStatus=JobDetailsRecorder(cronObj.UniqueId,company,tenant);
                 result.CachedStatus=jobRecStatus;
                 callback(undefined,result);
             }).catch(function (error) {
@@ -289,7 +291,7 @@ function RecoverJobs(Jobs)
                                         });
                                     }
 
-                                }, null, false);
+                                }, null, false,result.Timezone);
 
                                 Jobs[cronId] =job;
                                 job.start();
