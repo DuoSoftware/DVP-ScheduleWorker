@@ -96,8 +96,9 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
                 url: result.CallbackURL,
                 method: "POST",
                 headers: {
-                authorization: "bearer "+authToken,
-                companyinfo: format("{0}:{1}", tenant, company)
+                'authorization': "bearer "+authToken,
+                'companyinfo': format("{0}:{1}", tenant, company),
+                'content-type': 'application/json'
             }};
 
             if(result.CallbackData)
