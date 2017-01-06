@@ -91,10 +91,19 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
         }
         else
         {
-            var croneCallbacks = {url: result.CallbackURL, method: "POST", json: result,headers: {
+            var croneCallbacks =
+            {
+                url: result.CallbackURL,
+                method: "POST",
+                headers: {
                 authorization: "bearer "+authToken,
                 companyinfo: format("{0}:{1}", tenant, company)
             }};
+
+            if(result.CallbackData)
+            {
+                croneCallbacks.body = result.CallbackData;
+            }
 
 
             httpReq(croneCallbacks, function (error, response, data) {
