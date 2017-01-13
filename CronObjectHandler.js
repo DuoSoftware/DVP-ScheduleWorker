@@ -91,6 +91,7 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
         }
         else
         {
+            console.log("Calling callback service : " + result.CallbackURL + " for cron pattern : " + result.CronePattern);
             var croneCallbacks =
             {
                 url: result.CallbackURL,
