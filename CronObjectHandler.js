@@ -91,10 +91,21 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
         }
         else
         {
-            var croneCallbacks = {url: result.CallbackURL, method: "POST", json: result,headers: {
-                authorization: "bearer "+authToken,
-                companyinfo: format("{0}:{1}", tenant, company)
+            console.log("Calling callback service : " + result.CallbackURL + " for cron pattern : " + result.CronePattern);
+            var croneCallbacks =
+            {
+                url: result.CallbackURL,
+                method: "POST",
+                headers: {
+                'authorization': "bearer "+authToken,
+                'companyinfo': format("{0}:{1}", tenant, company),
+                'content-type': 'application/json'
             }};
+
+            if(result.CallbackData)
+            {
+                croneCallbacks.body = result.CallbackData;
+            }
 
 
             httpReq(croneCallbacks, function (error, response, data) {
