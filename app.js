@@ -105,37 +105,37 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
             }
             else
             {
-                    var job=new cronJob(pattern, function() {
-                        CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant, function (err,response) {
+                var job=new cronJob(pattern, function() {
+                    CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant, function (err,response) {
 
-                            if(err)
+                        if(err)
+                        {
+                            console.log(err);
+                        }
+                        else
+                        {
+                            if(checkDate)
                             {
-                                console.log(err);
+                                delete Jobs[reqId];
+
+                                CroneHandler.JobRemover(reqId,company,tenant, function (errRemove,resRemove) {
+                                    if(errRemove)
+                                    {
+                                        console.log("Error in object cache removing");
+                                    }
+                                    else
+                                    {
+                                        console.log("Object cache removed successfully");
+                                    }
+                                });
+
                             }
-                            else
-                            {
-                                if(checkDate)
-                                {
-                                    delete Jobs[reqId];
+                        }
 
-                                    CroneHandler.JobRemover(reqId,company,tenant, function (errRemove,resRemove) {
-                                        if(errRemove)
-                                        {
-                                            console.log("Error in object cache removing");
-                                        }
-                                        else
-                                        {
-                                            console.log("Object cache removed successfully");
-                                        }
-                                    });
-
-                                }
-                            }
-
-                        });
+                    });
 
 
-                    }, null, false,req.body.Timezone);
+                }, null, false,req.body.Timezone);
 
 
 
@@ -259,6 +259,48 @@ RestServer.put('/DVP/API/'+version+'/Cron/:id',authorization({resource:"template
     var company = req.user.company;
     var tenant=req.user.tenant;
 
+    Jobs[croneId].stop();
+    var pattern="";
+    var checkDate=false;
+    var expiredDate=false;
+    req.body.checkDate=checkDate;
+
+    if(req.body.CronePattern)
+    {
+        try {
+            var isValidPattern = parser.parseExpression(req.body.CronePattern);
+            if(isValidPattern)
+            {
+                pattern=req.body.CronePattern;
+                checkDate=false;
+                req.body.checkDate=checkDate;
+            }
+            //console.log(interval);
+        }
+        catch(e)
+        {
+            pattern= new Date(req.body.CronePattern);
+            if (pattern<new Date())
+            {
+                expiredDate=true;
+                var jsonString = messageFormatter.FormatMessage(new Error("Expired date/time"), "ERROR", false, undefined);
+                logger.debug('[DVP-CronScheduler.New Cron] - [%s] - Invalid date/time',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                checkDate=true;
+                req.body.checkDate=checkDate;
+            }
+
+        }
+    }
+
+
+
+
+
+
     CroneHandler.CroneObjectUpdater(croneId,company,tenant,req.body, function (err,response) {
         if(err)
         {
@@ -268,6 +310,44 @@ RestServer.put('/DVP/API/'+version+'/Cron/:id',authorization({resource:"template
         }
         else
         {
+
+
+
+            var job=new cronJob(pattern, function() {
+                CroneHandler.CronCallbackHandler(croneId,company,tenant, function (err,response) {
+
+                    if(err)
+                    {
+                        console.log(err);
+                    }
+                    else
+                    {
+                        if(checkDate)
+                        {
+                            delete Jobs[croneId];
+
+                            CroneHandler.JobRemover(croneId,company,tenant, function (errRemove,resRemove) {
+                                if(errRemove)
+                                {
+                                    console.log("Error in object cache removing");
+                                }
+                                else
+                                {
+                                    console.log("Object cache removed successfully");
+                                }
+                            });
+
+                        }
+                    }
+
+                });
+
+
+            }, null, false,req.body.Timezone);
+
+            Jobs[croneId] =job;
+            job.start();
+
             var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, response);
             logger.debug('[DVP-CronScheduler.update Cron] - [%s] - Updation success',reqId,jsonString);
             res.end(jsonString);

@@ -427,7 +427,7 @@ function CroneObjectUpdater(croneUuid,company,tenant,cronData,callback)
     {
         delete cronData.UniqueId
     }
-    if(cronData.CronePattern)
+    if(cronData.CronePattern && !cronData.checkDate)
     {
         delete cronData.CronePattern;
     }
