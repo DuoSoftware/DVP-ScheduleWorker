@@ -36,7 +36,7 @@ client.on("error", function (err) {
 function CroneDataRecorder(cronObj,company,tenant,callback)
 {
 
-    DbConn.Cron.find({where:[{Reference: cronObj.Reference},{Company: company},{Tenant:tenant}]}).then(function (resCheckAvailable) {
+    DbConn.Cron.find({where:[{Reference: cronObj.Reference.toString()},{Company: company},{Tenant:tenant}]}).then(function (resCheckAvailable) {
 
         if(!resCheckAvailable)
         {
@@ -427,7 +427,7 @@ function CroneObjectUpdater(croneUuid,company,tenant,cronData,callback)
     {
         delete cronData.UniqueId
     }
-    if(cronData.CronePattern)
+    if(cronData.CronePattern && !cronData.checkDate)
     {
         delete cronData.CronePattern;
     }
