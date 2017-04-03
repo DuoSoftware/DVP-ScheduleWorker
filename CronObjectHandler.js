@@ -185,7 +185,13 @@ function JobRecordPicker(jobId,callback)
         }
         else
         {
-            callback(new Error('No job record found'),undefined);
+
+            var ErrorObj =
+            {
+                message:"No job record found",
+                stack:undefined
+            }
+            callback(ErrorObj,undefined);
         }
 
 
@@ -205,7 +211,12 @@ function PickJobRecordByReference(ref,company,tenant,callback)
         }
         else
         {
-            callback(new Error('No job record found'),undefined);
+            var ErrorObj =
+            {
+                message:"No job record found",
+                stack:undefined
+            }
+            callback(ErrorObj,undefined);
         }
 
 
