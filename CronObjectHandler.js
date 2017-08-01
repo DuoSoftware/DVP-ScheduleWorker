@@ -9,15 +9,115 @@ var format=require('stringformat');
 var config = require('config');
 var async= require('async');
 var schedule = require('node-schedule');
+var authToken = config.Token;
 
 
-var redis=require('redis');
+var redis=require('ioredis');
 
-var port = config.Redis.port || 3000;
+
+var redisip = config.Redis.ip;
+var redisport = config.Redis.port;
+var redispass = config.Redis.password;
+var redismode = config.Redis.mode;
+var redisdb = config.Redis.db;
+
+
+
+var redisSetting =  {
+    port:redisport,
+    host:redisip,
+    family: 4,
+    password: redispass,
+    db: redisdb,
+    retryStrategy: function (times) {
+        var delay = Math.min(times * 50, 2000);
+        return delay;
+    },
+    reconnectOnError: function (err) {
+
+        return true;
+    }
+};
+
+if(redismode == 'sentinel'){
+
+    if(config.Redis.sentinels && config.Redis.sentinels.hosts && config.Redis.sentinels.port, config.Redis.sentinels.name){
+        var sentinelHosts = config.Redis.sentinels.hosts.split(',');
+        if(Array.isArray(sentinelHosts) && sentinelHosts.length > 2){
+            var sentinelConnections = [];
+
+            sentinelHosts.forEach(function(item){
+
+                sentinelConnections.push({host: item, port:config.Redis.sentinels.port})
+
+            })
+
+            redisSetting = {
+                sentinels:sentinelConnections,
+                name: config.Redis.sentinels.name,
+                password: redispass,
+                db: redisdb
+            }
+
+        }else{
+
+            console.log("No enough sentinel servers found .........");
+        }
+
+    }
+}
+
+var redisClient = undefined;
+
+if(redismode != "cluster") {
+    redisClient = new redis(redisSetting);
+}else{
+
+    var redisHosts = redisip.split(",");
+    if(Array.isArray(redisHosts)){
+
+
+        redisSetting = [];
+        redisHosts.forEach(function(item){
+            redisSetting.push({
+                host: item,
+                port: redisport,
+                family: 4,
+                password: redispass,
+                db: redisdb});
+        });
+
+        var redisClient = new redis.Cluster([redisSetting]);
+
+    }else{
+
+        redisClient = new redis(redisSetting);
+    }
+
+
+}
+
+
+redisClient.on("error", function (err) {
+    console.log("Redis connection error  " + err);
+});
+
+redisClient.on("connect", function (err) {
+});
+
+
+
+
+
+
+
+
+
+/*var port = config.Redis.port || 3000;
 var ip = config.Redis.ip;
 var password = config.Redis.password;
 
-var authToken = config.Token;
+
 
 
 var client = redis.createClient(port,ip);
@@ -29,7 +129,7 @@ client.on("error", function (err) {
     console.log("Error " + err);
 
 
-});
+});*/
 
 
 
@@ -140,7 +240,7 @@ function JobDetailsRecorder(croneUuid,company,tenent)
 
     var jobKey = "CRON:"+croneUuid+":"+company+":"+tenent;
 
-    client.set(jobKey,croneUuid, function (error,result) {
+    redisClient.set(jobKey,croneUuid, function (error,result) {
 
         if(error)
         {
@@ -158,7 +258,7 @@ function JobDetailsPicker(callback)
 
     var searchKey = "CRON:*";
 
-    client.keys(searchKey, function (error,result) {
+    redisClient.keys(searchKey, function (error,result) {
 
         if(error)
         {
@@ -392,7 +492,7 @@ function RecoverJobs(Jobs)
 function JobCacheRemover(croneUuid,company,tenant,callback)
 {
     var jobKey = "CRON:"+croneUuid+":"+company+":"+tenant;
-    client.del(jobKey, function (err,res) {
+    redisClient.del(jobKey, function (err,res) {
         callback(err,res);
     });
 }
