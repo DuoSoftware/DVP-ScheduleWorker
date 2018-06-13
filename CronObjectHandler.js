@@ -10,6 +10,7 @@ var config = require('config');
 var async= require('async');
 var schedule = require('node-schedule');
 var authToken = config.Token;
+var uuid = require('node-uuid');
 
 
 var redis=require('ioredis');
@@ -114,48 +115,54 @@ redisClient.on("connect", function (err) {
 
 
 /*var port = config.Redis.port || 3000;
-var ip = config.Redis.ip;
-var password = config.Redis.password;
+ var ip = config.Redis.ip;
+ var password = config.Redis.password;
 
 
 
 
-var client = redis.createClient(port,ip);
-client.auth(password, function (error) {
-    console.log("Redis Auth Error " + error);
-});
+ var client = redis.createClient(port,ip);
+ client.auth(password, function (error) {
+ console.log("Redis Auth Error " + error);
+ });
 
-client.on("error", function (err) {
-    console.log("Error " + err);
+ client.on("error", function (err) {
+ console.log("Error " + err);
 
 
-});*/
+ });*/
 
 
 
 function CroneDataRecorder(cronObj,company,tenant,callback)
 {
 
-    DbConn.Cron.find({where:[{Reference: cronObj.Reference.toString()},{Company: company},{Tenant:tenant}]}).then(function (resCheckAvailable) {
+
+    if(!cronObj.Reference)
+    {
+        cronObj.Reference=uuid.v4();
+    }
+
+    DbConn.Cron.find({where:[{Reference: cronObj.Reference},{Company: company},{Tenant:tenant}]}).then(function (resCheckAvailable) {
 
         if(!resCheckAvailable)
         {
             var CronObj = DbConn.Cron
                 .build(
-                {
-                    UniqueId: cronObj.UniqueId,
-                    Description: cronObj.Description,
-                    CronePattern: cronObj.CronePattern,
-                    CallbackURL: cronObj.CallbackURL,
-                    CallbackData: cronObj.CallbackData,
-                    Company:company,
-                    Tenant:tenant,
-                    Reference:cronObj.Reference,
-                    Timezone:cronObj.Timezone
+                    {
+                        UniqueId: cronObj.UniqueId,
+                        Description: cronObj.Description,
+                        CronePattern: cronObj.CronePattern,
+                        CallbackURL: cronObj.CallbackURL,
+                        CallbackData: cronObj.CallbackData,
+                        Company:company,
+                        Tenant:tenant,
+                        Reference:cronObj.Reference,
+                        Timezone:cronObj.Timezone
 
 
-                }
-            );
+                    }
+                );
             CronObj.save().then(function (result)
             {
                 var jobRecStatus=JobDetailsRecorder(cronObj.UniqueId,company,tenant);
@@ -193,14 +200,14 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
         {
             console.log("Calling callback service : " + result.CallbackURL + " for cron pattern : " + result.CronePattern);
             var croneCallbacks =
-            {
-                url: result.CallbackURL,
-                method: "POST",
-                headers: {
-                'authorization': "bearer "+authToken,
-                'companyinfo': format("{0}:{1}", tenant, company),
-                'content-type': 'application/json'
-            }};
+                {
+                    url: result.CallbackURL,
+                    method: "POST",
+                    headers: {
+                        'authorization': "bearer "+authToken,
+                        'companyinfo': format("{0}:{1}", tenant, company),
+                        'content-type': 'application/json'
+                    }};
 
             if(result.CallbackData)
             {
@@ -287,10 +294,10 @@ function JobRecordPicker(jobId,callback)
         {
 
             var ErrorObj =
-            {
-                message:"No job record found",
-                stack:undefined
-            }
+                {
+                    message:"No job record found",
+                    stack:undefined
+                }
             callback(ErrorObj,undefined);
         }
 
@@ -312,10 +319,10 @@ function PickJobRecordByReference(ref,company,tenant,callback)
         else
         {
             var ErrorObj =
-            {
-                message:"No job record found",
-                stack:undefined
-            }
+                {
+                    message:"No job record found",
+                    stack:undefined
+                }
             callback(ErrorObj,undefined);
         }
 
