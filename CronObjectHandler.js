@@ -140,6 +140,7 @@ function CroneDataRecorder(cronObj,company,tenant,callback)
 
     if(!cronObj.Reference)
     {
+        console.log("No Reference found, Default Reference added");
         cronObj.Reference=uuid.v4();
     }
 
