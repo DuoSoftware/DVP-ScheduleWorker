@@ -206,9 +206,9 @@ RestServer.del('/DVP/API/'+version+'/Cron/Reference/:id',authorization({resource
     var company = req.user.company;
     var tenant=req.user.tenant;
 
-    console.log("Reference ID: "+req.params.id);
+    console.log("Reference ID: "+croneId);
 
-    CroneHandler.PickJobRecordByReference(req.params.id,company,tenant, function (errData,resData) {
+    CroneHandler.PickJobRecordByReference(croneId,company,tenant, function (errData,resData) {
 
         if(errData)
         {
@@ -235,8 +235,7 @@ RestServer.del('/DVP/API/'+version+'/Cron/Reference/:id',authorization({resource
                     logger.debug('[DVP-CronScheduler.Delete Cron by ref] - [%s] - Successfully removed',reqId,jsonString);
                     res.end(jsonString);
                 }
-                delete Jobs[reqId];
-                res.end();
+
 
 
             });
