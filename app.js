@@ -107,9 +107,9 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
             {
                 var cronObj=req.body;
                 var pushObj ={
-                    pattern:cronObj.CronePattern,
-                    timezone:cronObj.Timezone,
-                    reqId:cronObj.UniqueId,
+                    CronePattern:cronObj.CronePattern,
+                    Timezone:cronObj.Timezone,
+                    UniqueId:cronObj.UniqueId,
                     callback:{CallbackURL:cronObj.CallbackURL,CallbackData:cronObj.CallbackData,company:company,tenant:tenant,pattern:cronObj.CronePattern}
 
 
@@ -329,9 +329,9 @@ RestServer.put('/DVP/API/'+version+'/Cron/:id',authorization({resource:"template
 
             var cronObj=req.body;
             var pushObj ={
-                pattern:cronObj.CronePattern,
-                timezone:cronObj.Timezone,
-                reqId:cronObj.UniqueId,
+                CronePattern:cronObj.CronePattern,
+                Timezone:cronObj.Timezone,
+                UniqueId:cronObj.UniqueId,
                 callback:{CallbackURL:cronObj.CallbackURL,CallbackData:cronObj.CallbackData,company:company,tenant:tenant,pattern:cronObj.CronePattern}
 
 
@@ -567,6 +567,56 @@ RestServer.post('/DVP/API/'+version+'/Cron/Reference/:id/Action/:action',authori
 
         }
     });
+
+
+
+    return next();
+
+});
+
+RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"template", action:"write"}), function (req,res,next){
+
+    var Ids =[];
+    var company = req.user.company;
+    var tenant=req.user.tenant;
+    var reqId = uuid.v1();
+
+    if(req.body && req.body.Ids)
+    {
+        Ids=req.body.Ids;
+    }
+
+    console.log(Ids);
+
+    if(Ids.length>0)
+    {
+        CroneHandler.PickJobsByIds(Ids,company,tenant, function (errData,resData) {
+
+            if(errData)
+            {
+                var jsonString = messageFormatter.FormatMessage(errData, "ERROR", false, undefined);
+                logger.error('[DVP-CronScheduler.Cron Actions] - [%s] - Cron data not found',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resData);
+                logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Crondata found',reqId,jsonString);
+                res.end(jsonString);
+
+
+            }
+        });
+    }
+    else
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("No Job Ids received"), "ERROR", false, croneId);
+        logger.debug('[DVP-CronScheduler.New Cron] - [%s] - No Job Ids received',reqId,jsonString);
+        res.end(jsonString);
+    }
+
+
+
 
 
 

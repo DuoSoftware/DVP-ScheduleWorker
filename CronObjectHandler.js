@@ -144,20 +144,20 @@ function CroneDataRecorder(cronObj,company,tenant,callback)
         {
             var CronObj = DbConn.Cron
                 .build(
-                {
-                    UniqueId: cronObj.UniqueId,
-                    Description: cronObj.Description,
-                    CronePattern: cronObj.CronePattern,
-                    CallbackURL: cronObj.CallbackURL,
-                    CallbackData: cronObj.CallbackData,
-                    Company:company,
-                    Tenant:tenant,
-                    Reference:cronObj.Reference,
-                    Timezone:cronObj.Timezone
+                    {
+                        UniqueId: cronObj.UniqueId,
+                        Description: cronObj.Description,
+                        CronePattern: cronObj.CronePattern,
+                        CallbackURL: cronObj.CallbackURL,
+                        CallbackData: cronObj.CallbackData,
+                        Company:company,
+                        Tenant:tenant,
+                        Reference:cronObj.Reference,
+                        Timezone:cronObj.Timezone
 
 
-                }
-            );
+                    }
+                );
             CronObj.save().then(function (result)
             {
                 var jobRecStatus=JobDetailsRecorder(cronObj.UniqueId,company,tenant);
@@ -195,14 +195,14 @@ function CronCallbackHandler(croneUuid,company,tenant,callback)
         {
             console.log("Calling callback service : " + result.CallbackURL + " for cron pattern : " + result.CronePattern);
             var croneCallbacks =
-            {
-                url: result.CallbackURL,
-                method: "POST",
-                headers: {
-                'authorization': "bearer "+authToken,
-                'companyinfo': format("{0}:{1}", tenant, company),
-                'content-type': 'application/json'
-            }};
+                {
+                    url: result.CallbackURL,
+                    method: "POST",
+                    headers: {
+                        'authorization': "bearer "+authToken,
+                        'companyinfo': format("{0}:{1}", tenant, company),
+                        'content-type': 'application/json'
+                    }};
 
             if(result.CallbackData)
             {
@@ -289,10 +289,10 @@ function JobRecordPicker(jobId,callback)
         {
 
             var ErrorObj =
-            {
-                message:"No job record found",
-                stack:undefined
-            }
+                {
+                    message:"No job record found",
+                    stack:undefined
+                }
             callback(ErrorObj,undefined);
         }
 
@@ -314,10 +314,10 @@ function PickJobRecordByReference(ref,company,tenant,callback)
         else
         {
             var ErrorObj =
-            {
-                message:"No job record found",
-                stack:undefined
-            }
+                {
+                    message:"No job record found",
+                    stack:undefined
+                }
             callback(ErrorObj,undefined);
         }
 
@@ -606,7 +606,42 @@ var publishToCreateJobs = function(pushObj)
 var publishToRemoveJobs = function(jobId)
 {
     redisClient.publish(remJobQueue,jobId);
-}
+};
+
+function PickJobsByIds(ids,company,tenant,callback)
+{
+    var queryObj = {
+        Company: company,
+        Tenant:tenant,
+        $or:[]
+    }
+
+    ids.forEach(function (item) {
+        queryObj.$or.push({UniqueId:{$eq:item}});
+    })
+
+    DbConn.Cron.findAll({where:queryObj}).then(function (result) {
+
+        if(result)
+        {
+            callback(undefined,result);
+        }
+        else
+        {
+            var ErrorObj =
+                {
+                    message:"No job record found",
+                    stack:undefined
+                }
+            callback(ErrorObj,undefined);
+        }
+
+
+    }).catch(function (error) {
+
+        callback(error,undefined);
+    });
+};
 
 
 
@@ -622,3 +657,4 @@ module.exports.JobCacheRemover = JobCacheRemover;
 module.exports.PickJobRecordByReference = PickJobRecordByReference;
 module.exports.publishToCreateJobs = publishToCreateJobs;
 module.exports.publishToRemoveJobs = publishToRemoveJobs;
+module.exports.PickJobsByIds = PickJobsByIds;
