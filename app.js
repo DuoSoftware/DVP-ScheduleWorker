@@ -105,7 +105,19 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
             }
             else
             {
-                var job=new cronJob(pattern, function() {
+                var cronObj=req.body;
+                var pushObj ={
+                    pattern:cronObj.Timezone,
+                    timezone:"Asia/Colombo",
+                    reqId:cronObj.UniqueId,
+                    callback:{CallbackURL:cronObj.CallbackURL,CallbackData:cronObj.CallbackData,company:company,tenant:tenant,pattern:cronObj.CronePattern}
+
+
+
+                }
+
+                CroneHandler.publishToCreateJobs(pushObj);
+                /*var job=new cronJob(pattern, function() {
                     CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant, function (err,response) {
 
                         if(err)
@@ -135,7 +147,7 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
                     });
 
 
-                }, null, false,req.body.Timezone);
+                }, null, false,req.body.Timezone);*/
 
 
 
@@ -143,6 +155,11 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
 
                 Jobs[reqId] =job;
                 job.start();
+
+
+
+
+
 
 
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, reqId);
@@ -172,7 +189,8 @@ RestServer.del('/DVP/API/'+version+'/Cron/:id',authorization({resource:"template
 
     CroneHandler.JobRemover(croneId,company,tenant, function (errRemv,resRemv) {
 
-        delete Jobs[reqId];
+        /*delete Jobs[reqId];*/
+        CroneHandler.publishToRemoveJobs(reqId);
 
         if(errRemv )
         {
@@ -323,7 +341,8 @@ RestServer.put('/DVP/API/'+version+'/Cron/:id',authorization({resource:"template
                     {
                         if(checkDate)
                         {
-                            delete Jobs[croneId];
+                            //delete Jobs[croneId];
+                            CroneHandler.publishToRemoveJobs(croneId);
 
                             CroneHandler.JobRemover(croneId,company,tenant, function (errRemove,resRemove) {
                                 if(errRemove)
@@ -443,8 +462,9 @@ RestServer.post('/DVP/API/'+version+'/Cron/:id/Action/:action',authorization({re
         }
         else if(action=="destroy")
         {
-            Jobs[croneId].stop();
-            delete Jobs[croneId];
+            /*Jobs[croneId].stop();
+            delete Jobs[croneId];*/
+            CroneHandler.publishToRemoveJobs(croneId);
             CroneHandler.JobRemover(croneId,company,tenant, function (errRemove,resRemove) {
 
                 if(errRemove)
@@ -523,8 +543,9 @@ RestServer.post('/DVP/API/'+version+'/Cron/Reference/:id/Action/:action',authori
                     }
                     else if(action=="destroy")
                     {
-                        Jobs[croneId].stop();
-                        delete Jobs[croneId];
+                        /*Jobs[croneId].stop();
+                        delete Jobs[croneId];*/
+                        CroneHandler.publishToRemoveJobs(croneId);
                         CroneHandler.JobRemover(croneId,company,tenant, function (errRemove,resRemove) {
 
                             if(errRemove)

@@ -10,6 +10,8 @@ var config = require('config');
 var async= require('async');
 var schedule = require('node-schedule');
 var authToken = config.Token;
+var jobQueue = config.JobQueue.name;
+var remJobQueue = config.JobRemQueue.name;
 
 
 var redis=require('ioredis');
@@ -597,6 +599,16 @@ function PickCronById(croneUuid,company,tenant,callback)
 };
 
 
+var publishToCreateJobs = function(pushObj)
+{
+    redisClient.rpush(jobQueue,JSON.stringify(pushObj));
+}
+var publishToRemoveJobs = function(jobId)
+{
+    redisClient.publish(JobRemQueue,jobId);
+}
+
+
 
 module.exports.CroneDataRecorder = CroneDataRecorder;
 module.exports.CronCallbackHandler = CronCallbackHandler;
@@ -608,3 +620,5 @@ module.exports.PickAllCrons = PickAllCrons;
 module.exports.PickCronById = PickCronById;
 module.exports.JobCacheRemover = JobCacheRemover;
 module.exports.PickJobRecordByReference = PickJobRecordByReference;
+module.exports.publishToCreateJobs = publishToCreateJobs;
+module.exports.publishToRemoveJobs = publishToRemoveJobs;
