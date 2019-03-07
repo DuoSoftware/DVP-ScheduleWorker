@@ -605,7 +605,7 @@ var publishToCreateJobs = function(pushObj)
 }
 var publishToRemoveJobs = function(jobId)
 {
-    redisClient.publish(JobRemQueue,jobId);
+    redisClient.publish(remJobQueue,jobId);
 }
 
 

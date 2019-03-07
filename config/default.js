@@ -45,7 +45,13 @@ module.exports = {
             }
     },
 
-    "Token": ""
+    "Token": "",
+    "JobQueue":{
+        "name":"1:103:cron:jobqueue"
+    },
+    "JobRemQueue":{
+        "name":"1:103:cron:removequeue"
+    }
 
 
 
