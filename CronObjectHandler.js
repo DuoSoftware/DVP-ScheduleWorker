@@ -10,8 +10,8 @@ var config = require('config');
 var async= require('async');
 var schedule = require('node-schedule');
 var authToken = config.Token;
-var jobQueue = config.JobQueue.name;
-var remJobQueue = config.JobRemQueue.name;
+
+var parser = require('cron-parser');
 
 
 var redis=require('ioredis');
@@ -160,8 +160,8 @@ function CroneDataRecorder(cronObj,company,tenant,callback)
                 );
             CronObj.save().then(function (result)
             {
-                var jobRecStatus=JobDetailsRecorder(cronObj.UniqueId,company,tenant);
-                result.CachedStatus=jobRecStatus;
+                /*var jobRecStatus=JobDetailsRecorder(cronObj.UniqueId,company,tenant);
+                result.CachedStatus=jobRecStatus;*/
                 callback(undefined,result);
             }).catch(function (error) {
                 callback(error,undefined);
@@ -518,7 +518,15 @@ function JobRemover(croneUuid,company,tenant,callback)
 
     JobObjectRemover(croneUuid,company,tenant, function (errRemObj,resRemObj) {
 
-        JobCacheRemover(croneUuid,company,tenant, function (errRemCahe,resCache) {
+        if(errRemObj)
+        {
+            callback(errRemObj,undefined);
+        }
+        else
+        {
+            callback(undefined,resRemObj);
+        }
+       /* JobCacheRemover(croneUuid,company,tenant, function (errRemCahe,resCache) {
 
             if(errRemCahe)
             {
@@ -530,7 +538,7 @@ function JobRemover(croneUuid,company,tenant,callback)
             }
 
 
-        });
+        });*/
     });
 };
 
@@ -599,12 +607,14 @@ function PickCronById(croneUuid,company,tenant,callback)
 };
 
 
-var publishToCreateJobs = function(pushObj)
+var publishToCreateJobs = function(pushObj,company,tenant)
 {
+    var jobQueue=tenant+":"+company+":cron:jobqueue";
     redisClient.rpush(jobQueue,JSON.stringify(pushObj));
 }
-var publishToRemoveJobs = function(jobId)
+var publishToRemoveJobs = function(jobId,company,tenant)
 {
+    var remJobQueue=tenant+":"+company+":cron:removequeue";
     redisClient.publish(remJobQueue,jobId);
 };
 
@@ -643,6 +653,59 @@ function PickJobsByIds(ids,company,tenant,callback)
     });
 };
 
+function restartCronJob(cronId,company,tenant)
+{
+    PickCronById(cronId,company,tenant,function (e,r) {
+        if(e)
+        {
+            var jsonString = messageFormatter.FormatMessage(e, "ERROR", false, undefined);
+            logger.debug('[DVP-CronScheduler.restartCronJob] - [%s] - Error in searching cron record',cronId,jsonString);
+        }
+        else
+        {
+            var expiredDate =false;
+            var pattern ="";
+            try {
+                var isValidPattern = parser.parseExpression(r.CronePattern);
+                if(isValidPattern)
+                {
+                    pattern=r.CronePattern;
+
+                }
+                //console.log(interval);
+            }
+            catch(e)
+            {
+                pattern= new Date(r.CronePattern);
+                if (pattern<new Date())
+                {
+                    expiredDate=true;
+                    var jsonString = messageFormatter.FormatMessage(new Error("Expired date/time"), "ERROR", false, undefined);
+                    logger.debug('[DVP-CronScheduler.restartCronJob] - [%s] - Invalid date/time',cronId,jsonString);
+
+                }
+                else
+                {
+                    expiredDate=false;
+                }
+
+            }
+
+            if(!expiredDate)
+            {
+                var datObj ={
+                    CronePattern:pattern,
+                    Timezone:r.Timezone,
+                    UniqueId:r.UniqueId,
+                    callback:{CallbackURL:r.CallbackURL,CallbackData:r.CallbackData,company:company,tenant:tenant,pattern:r.CronePattern}
+
+                }
+                publishToCreateJobs(datObj,company,tenant);
+            }
+        }
+    })
+}
+
 
 
 module.exports.CroneDataRecorder = CroneDataRecorder;
@@ -658,3 +721,4 @@ module.exports.PickJobRecordByReference = PickJobRecordByReference;
 module.exports.publishToCreateJobs = publishToCreateJobs;
 module.exports.publishToRemoveJobs = publishToRemoveJobs;
 module.exports.PickJobsByIds = PickJobsByIds;
+module.exports.restartCronJob = restartCronJob;
