@@ -236,7 +236,7 @@ RestServer.del('/DVP/API/'+version+'/Cron/Reference/:id',authorization({resource
         else
         {
             CroneHandler.JobRemover(resData.UniqueId,company,tenant, function (errRemv,resRemv) {
-
+                CroneHandler.publishToRemoveJobs(croneId,company,tenant);
 
                 if(errRemv )
                 {
