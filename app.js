@@ -113,7 +113,7 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
                     Timezone:cronObj.Timezone,
                     UniqueId:cronObj.UniqueId,
                     callback:{CallbackURL:cronObj.CallbackURL,CallbackData:cronObj.CallbackData,company:company,tenant:tenant,pattern:pattern}
-
+                    checkDate:checkDate
 
 
                 }
