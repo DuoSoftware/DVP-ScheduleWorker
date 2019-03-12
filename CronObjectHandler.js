@@ -706,6 +706,11 @@ function restartCronJob(cronId,company,tenant)
     })
 }
 
+function removeStoredCronId (workerId,cronId)
+{
+    redisClient.lrem(workerId,0,cronId);
+}
+
 
 
 module.exports.CroneDataRecorder = CroneDataRecorder;
@@ -722,3 +727,4 @@ module.exports.publishToCreateJobs = publishToCreateJobs;
 module.exports.publishToRemoveJobs = publishToRemoveJobs;
 module.exports.PickJobsByIds = PickJobsByIds;
 module.exports.restartCronJob = restartCronJob;
+module.exports.removeStoredCronId = removeStoredCronId;

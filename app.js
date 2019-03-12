@@ -232,7 +232,7 @@ RestServer.del('/DVP/API/'+version+'/Cron/Reference/:id',authorization({resource
         if(errData)
         {
             var jsonString = messageFormatter.FormatMessage(errData, "ERROR", false, undefined);
-            logger.debug('[DVP-CronScheduler.Delete Cron by ref] - [%s] - Error in searching cron',reqId,jsonString);
+            logger.error('[DVP-CronScheduler.Delete Cron by ref] - [%s] - Error in searching cron',reqId,jsonString);
             res.end(jsonString);
         }
         else
@@ -244,7 +244,7 @@ RestServer.del('/DVP/API/'+version+'/Cron/Reference/:id',authorization({resource
                 {
 
                     var jsonString = messageFormatter.FormatMessage(errRemv, "ERROR", false, undefined);
-                    logger.debug('[DVP-CronScheduler.Delete Cron by ref] - [%s] - Error in removing',reqId,jsonString);
+                    logger.error('[DVP-CronScheduler.Delete Cron by ref] - [%s] - Error in removing',reqId,jsonString);
                     res.end(jsonString);
                 }
                 else
@@ -581,6 +581,7 @@ RestServer.post('/DVP/API/'+version+'/Cron/Reference/:id/Action/:action',authori
 RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"template", action:"write"}), function (req,res,next){
 
     var Ids =[];
+    var workerId="";
     var company = req.user.company;
     var tenant=req.user.tenant;
     var reqId = uuid.v1();
@@ -589,6 +590,10 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
     if(req.body && req.body.Ids)
     {
         Ids=req.body.Ids;
+    }
+    if(req.body && req.body.workerId)
+    {
+        Ids=req.body.workerId;
     }
 
     console.log(Ids);
@@ -618,6 +623,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                             var jsonString = messageFormatter.FormatMessage(undefined, "INFO", true, "Valid pattern found");
                             logger.info('[DVP-ScheduledJobManager.Cron validation] -  INFO ',jsonString);
                             item.checkDate=false;
+                            removeStoredCronId(workerId,0,item.UniqueId);
                         }
                     }
                     catch (e) {
@@ -626,6 +632,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                         if (pattern<new Date())
                         {
                             isExpired=true;
+                            removeStoredCronId(workerId,0,item.UniqueId);
                         }
                         else
                         {
