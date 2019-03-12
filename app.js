@@ -585,6 +585,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
     var tenant=req.user.tenant;
     var reqId = uuid.v1();
 
+
     if(req.body && req.body.Ids)
     {
         Ids=req.body.Ids;
@@ -607,6 +608,8 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                 var result =[];
                 resData.forEach(function (item) {
                     var isExpired=false;
+
+                    item.checkDate=false;
                     try
                     {
                         var isValidPattern = parser.parseExpression(item.CronePattern);
@@ -614,6 +617,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                         {
                             var jsonString = messageFormatter.FormatMessage(undefined, "INFO", true, "Valid pattern found");
                             logger.info('[DVP-ScheduledJobManager.Cron validation] -  INFO ',jsonString);
+                            item.checkDate=false;
                         }
                     }
                     catch (e) {
@@ -623,6 +627,10 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                         {
                             isExpired=true;
                         }
+                        else
+                        {
+                            item.checkDate=false;
+                        }
                     }
 
                     if(!isExpired)
@@ -631,6 +639,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                     }
                     else
                     {
+
                         CroneHandler.JobCacheRemover(item.UniqueId,company,tenant,function (e,r) {
                             console.log(e);
                             console.log(r);
