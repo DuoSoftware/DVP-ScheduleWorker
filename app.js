@@ -593,12 +593,14 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
     }
     if(req.body && req.body.workerId)
     {
-        Ids=req.body.workerId;
+        workerId=req.body.workerId;
     }
 
-    console.log(Ids);
 
-    if(Ids.length>0)
+    logger.info('[DVP-CronScheduler.Cron Actions] - [%s] - Cron recovering started',reqId,jsonString);
+
+
+    if(Ids.length>0 && workerId)
     {
         CroneHandler.PickJobsByIds(Ids,company,tenant, function (errData,resData) {
 
@@ -655,10 +657,6 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                 });
 
 
-
-
-
-
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, result);
                 logger.debug('[DVP-CronScheduler.Cron Actions] - [%s] - Crondata found',reqId,jsonString);
                 res.end(jsonString);
@@ -669,7 +667,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
     }
     else
     {
-        var jsonString = messageFormatter.FormatMessage(new Error("No Job Ids received"), "ERROR", false, croneId);
+        var jsonString = messageFormatter.FormatMessage(new Error("No Job Ids or Worker Id received"), "ERROR", false, croneId);
         logger.debug('[DVP-CronScheduler.New Cron] - [%s] - No Job Ids received',reqId,jsonString);
         res.end(jsonString);
     }
