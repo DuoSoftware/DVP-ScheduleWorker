@@ -644,6 +644,8 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
 
                     if(!isExpired)
                     {
+                        console.log("........................Jobs To be Recovered......................");
+                        console.log(item);
                         result.push(item);
                     }
                     else
