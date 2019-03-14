@@ -625,7 +625,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                             var jsonString = messageFormatter.FormatMessage(undefined, "INFO", true, "Valid pattern found");
                             logger.info('[DVP-ScheduledJobManager.Cron validation] -  INFO ',jsonString);
                             item.checkDate=false;
-                            removeStoredCronId(workerId,0,item.UniqueId);
+                            CroneHandler.removeStoredCronId(workerId,0,item.UniqueId);
                         }
                     }
                     catch (e) {
@@ -634,7 +634,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                         if (pattern<new Date())
                         {
                             isExpired=true;
-                            removeStoredCronId(workerId,0,item.UniqueId);
+                            CroneHandler.removeStoredCronId(workerId,0,item.UniqueId);
                         }
                         else
                         {
