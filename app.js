@@ -638,7 +638,7 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                         }
                         else
                         {
-                            item.checkDate=false;
+                            item.checkDate=true;
                         }
                     }
 
@@ -650,8 +650,11 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                     {
 
                         CroneHandler.JobCacheRemover(item.UniqueId,company,tenant,function (e,r) {
-                            console.log(e);
-                            console.log(r);
+                            if(e)
+                            {
+                                logger.error('[DVP-CronScheduler.Cron Actions] - [%s] - Error in Cache Removing',reqId,jsonString);
+                            }
+
                         });
                     }
                 });
