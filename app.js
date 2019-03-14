@@ -638,14 +638,16 @@ RestServer.post('/DVP/API/'+version+'/Crons/Recover',authorization({resource:"te
                         }
                         else
                         {
-                            item.checkDate=true;
+                            if(item.dataValues)
+                            {
+                                item.dataValues.checkDate=true;
+                            }
+
                         }
                     }
 
                     if(!isExpired)
                     {
-                        console.log("........................Jobs To be Recovered......................");
-                        console.log(item);
                         result.push(item);
                     }
                     else
