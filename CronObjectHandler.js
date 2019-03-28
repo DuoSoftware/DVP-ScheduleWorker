@@ -503,10 +503,10 @@ function JobObjectRemover(croneUuid,company,tenant,callback)
 {
     DbConn.Cron.destroy({where:[{UniqueId:croneUuid},{Company:company},{Tenant:tenant}]}).then(function (result) {
         console.log("Job object record removed from DB");
-        callback(result,undefined);
+        callback(undefined,result);
     }).catch(function (error) {
         console.log("Job object record removing error ");
-        callback(undefined,error);
+        callback(error,undefined);
 
     });
 
