@@ -609,12 +609,12 @@ function PickCronById(croneUuid,company,tenant,callback)
 
 var publishToCreateJobs = function(pushObj,company,tenant)
 {
-    var jobQueue=tenant+":"+company+":cron:jobqueue";
+    var jobQueue="cron_jobqueue";
     redisClient.rpush(jobQueue,JSON.stringify(pushObj));
 }
 var publishToRemoveJobs = function(jobId,company,tenant)
 {
-    var remJobQueue=tenant+":"+company+":cron:removequeue";
+    var remJobQueue="cron_removequeue";
     redisClient.publish(remJobQueue,jobId);
 };
 
