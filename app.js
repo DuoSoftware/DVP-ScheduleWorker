@@ -8,7 +8,9 @@ var uuid = require('node-uuid');
 var config = require('config');
 var CroneHandler=require('./CronObjectHandler.js');
 var parser = require('cron-parser');
+var dbModel = require('dvp-dbmodels');
 
+var healthcheck = require('dvp-healthcheck/DBHealthChecker');
 var jwt = require('restify-jwt');
 var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
@@ -39,7 +41,7 @@ var RestServer = restify.createServer({
 RestServer.use(restify.CORS());
 RestServer.use(restify.fullResponse());
 RestServer.pre(restify.pre.userAgentConnection());
-RestServer.use(jwt({secret: secret.Secret}));
+RestServer.use(jwt({secret: secret.Secret}).unless({path: ['/healthcheck']}));
 var version=config.Host.version;
 
 RestServer.listen(config.Host.port, function () {
@@ -56,9 +58,8 @@ RestServer.use(restify.acceptParser(RestServer.acceptable));
 RestServer.use(restify.queryParser());
 
 
-
-
-
+var hc = new healthcheck(RestServer, {redis: CroneHandler.redisClient, pg: dbModel.SequelizeConn });
+hc.Initiate();
 
 // Should pick referenceID from request as reqId, then store data with reqId. when new request from same referenceID cron object in DB should updated and current cron should removed and re started
 RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", action:"write"}), function (req,res,next) {

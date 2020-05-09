@@ -728,3 +728,4 @@ module.exports.publishToRemoveJobs = publishToRemoveJobs;
 module.exports.PickJobsByIds = PickJobsByIds;
 module.exports.restartCronJob = restartCronJob;
 module.exports.removeStoredCronId = removeStoredCronId;
+module.exports.redisClient = redisClient;

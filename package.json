@@ -2,7 +2,7 @@
   "name": "schedulemodule",
   "version": "1.0.0",
   "description": "",
-  "main": "CronObjectHandler.js",
+  "main": "app.js",
   "dependencies": {
     "async": "^2.0.0",
     "config": "^1.21.0",
@@ -10,6 +10,7 @@
     "cron-parser": "^2.3.0",
     "dvp-common": "1.1.0",
     "dvp-dbmodels": "2.1.0",
+    "dvp-healthcheck": "^1.0.6",
     "ioredis": "^3.1.2",
     "node-schedule": "^1.1.1",
     "node-uuid": "^1.4.7",
