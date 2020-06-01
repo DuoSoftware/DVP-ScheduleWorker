@@ -12,10 +12,10 @@ var dbModel = require('dvp-dbmodels');
 
 var healthcheck = require('dvp-healthcheck/DBHealthChecker');
 var jwt = require('restify-jwt');
-var secret = require('dvp-common/Authentication/Secret.js');
-var authorization = require('dvp-common/Authentication/Authorization.js');
-var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var secret = require('dvp-common-lite/Authentication/Secret.js');
+var authorization = require('dvp-common-lite/Authentication/Authorization.js');
+var messageFormatter = require('dvp-common-lite/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 var Jobs =[];
 restify.CORS.ALLOW_HEADERS.push('authorization');
 
