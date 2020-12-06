@@ -15,6 +15,7 @@ var parser = require('cron-parser');
 
 
 var redis=require('ioredis');
+const { logger } = require('dvp-common-lite/LogHandler/CommonLogHandler');
 
 
 var redisip = config.Redis.ip;
@@ -609,11 +610,13 @@ function PickCronById(croneUuid,company,tenant,callback)
 
 var publishToCreateJobs = function(pushObj,company,tenant)
 {
+    logger.debug("publishToCreateJobs: " + JSON.stringify(pushObj));
     var jobQueue="cron_jobqueue";
     redisClient.rpush(jobQueue,JSON.stringify(pushObj));
 }
 var publishToRemoveJobs = function(jobId,company,tenant)
 {
+    logger.debug("publishToRemoveJobs: " + jobId)
     var remJobQueue="cron_removequeue";
     redisClient.publish(remJobQueue,jobId);
 };

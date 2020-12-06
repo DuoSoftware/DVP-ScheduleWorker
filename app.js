@@ -86,6 +86,7 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
     }
     catch(e)
     {
+        logger.debug("Invalid CRON pattern: " + req.body.CronePattern);
         pattern= new Date(req.body.CronePattern);
         if (pattern<new Date())
         {
@@ -131,55 +132,9 @@ RestServer.post('/DVP/API/'+version+'/Cron',authorization({resource:"template", 
                 }
 
                 CroneHandler.publishToCreateJobs(pushObj,company,tenant);
-                /*var job=new cronJob(pattern, function() {
-                    CroneHandler.CronCallbackHandler(reqId,result.Company,result.Tenant, function (err,response) {
-
-                        if(err)
-                        {
-                            console.log(err);
-                        }
-                        else
-                        {
-                            if(checkDate)
-                            {
-                                delete Jobs[reqId];
-
-                                CroneHandler.JobRemover(reqId,company,tenant, function (errRemove,resRemove) {
-                                    if(errRemove)
-                                    {
-                                        console.log("Error in object cache removing");
-                                    }
-                                    else
-                                    {
-                                        console.log("Object cache removed successfully");
-                                    }
-                                });
-
-                            }
-                        }
-
-                    });
-
-
-                }, null, false,req.body.Timezone);*/
-
-
-
-
-
-                /*Jobs[reqId] =job;
-                job.start();*/
-
-
-
-
-
-
-
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, reqId);
                 logger.debug('[DVP-CronScheduler.New Cron] - [%s] - Successfully saved',reqId,jsonString);
                 res.end(jsonString);
-
             }
 
         });
