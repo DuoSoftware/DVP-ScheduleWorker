@@ -46,7 +46,9 @@ module.exports = {
     {
         "domain": "HOST_NAME",
         "port": "HOST_SCHEDULEWORKER_PORT",
-        "version": "HOST_VERSION"
+        "version": "HOST_VERSION",
+        "hostpath":"HOST_PATH",
+        "logfilepath": "LOG4JS_CONFIG"
     },
     "Token": "HOST_TOKEN"
 };
